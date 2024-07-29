@@ -50,6 +50,7 @@ const DEFAULT_FORM_STATE = {
   - onCloseDialog emits to close dialog
  */
 export default function ExpenseDialog(props) {
+  const { authUser } = useAuth();
   const isEdit = Object.keys(props.edit).length > 0;
   const [formFields, setFormFields] = useState(isEdit ? props.edit : DEFAULT_FORM_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,19 +63,19 @@ export default function ExpenseDialog(props) {
   }, [props.edit, props.showDialog])
 
   // Check whether any of the form fields are unedited
-  const isDisabled = () => formFields.fileName === DEFAULT_FILE_NAME || !formFields.date || formFields.locationName.length === 0 
-                     || formFields.address.length === 0 || formFields.items.length === 0 || formFields.amount.length === 0;
+  const isDisabled = () => formFields.fileName === DEFAULT_FILE_NAME || !formFields.date || formFields.locationName.length === 0
+    || formFields.address.length === 0 || formFields.items.length === 0 || formFields.amount.length === 0;
 
   // Update given field in the form
   const updateFormField = (event, field) => {
-    setFormFields(prevState => ({...prevState, [field]: event.target.value}))
+    setFormFields(prevState => ({ ...prevState, [field]: event.target.value }))
   }
 
   // Set the relevant fields for receipt image
   const setFileData = (target) => {
     const file = target.files[0];
-    setFormFields(prevState => ({...prevState, fileName: file.name}));
-    setFormFields(prevState => ({...prevState, file}));
+    setFormFields(prevState => ({ ...prevState, fileName: file.name }));
+    setFormFields(prevState => ({ ...prevState, file }));
   }
 
   const closeDialog = () => {
@@ -82,8 +83,24 @@ export default function ExpenseDialog(props) {
     props.onCloseDialog();
   }
 
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+
+    try {
+      const bucket = await uploadImage(formFields.file, authUser.uid);
+      await addReceipt(authUser.uid, formFields.date, formFields.locationName, 
+        formFields.address, formFields.items, formFields.amount, bucket);
+      props.onSuccess(RECEIPTS_ENUM.add);
+    } catch (error) {
+      props.onError(RECEIPTS_ENUM.add);
+      console.log(error);
+    }
+
+    closeDialog();
+  }
+
   return (
-    <Dialog classes={{paper: styles.dialog}}
+    <Dialog classes={{ paper: styles.dialog }}
       onClose={() => closeDialog()}
       open={props.showDialog}
       component="form">
@@ -92,20 +109,20 @@ export default function ExpenseDialog(props) {
       </Typography>
       <DialogContent className={styles.fields}>
         <Stack direction="row" spacing={2} className={styles.receiptImage}>
-          {(isEdit && !formFields.fileName) && <Avatar alt="receipt image" src={formFields.imageUrl} sx={{ marginRight: '1em' }}/> }
+          {(isEdit && !formFields.fileName) && <Avatar alt="receipt image" src={formFields.imageUrl} sx={{ marginRight: '1em' }} />}
           <Button variant="outlined" component="label" color="secondary">
             Upload Receipt
-            <input type="file" hidden onInput={(event) => {setFileData(event.target)}} />
+            <input type="file" hidden onInput={(event) => { setFileData(event.target) }} />
           </Button>
           <Typography>{formFields.fileName}</Typography>
         </Stack>
         <Stack>
           <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <DatePicker
+            <DatePicker
               label="Date"
               value={formFields.date}
               onChange={(newDate) => {
-                setFormFields(prevState => ({...prevState, date: newDate}));
+                setFormFields(prevState => ({ ...prevState, date: newDate }));
               }}
               maxDate={new Date()}
               renderInput={(params) => <TextField color="tertiary" {...params} />}
@@ -118,11 +135,11 @@ export default function ExpenseDialog(props) {
         <TextField color="tertiary" label="Amount" variant="standard" value={formFields.amount} onChange={(event) => updateFormField(event, 'amount')} />
       </DialogContent>
       <DialogActions>
-        {isSubmitting ? 
+        {isSubmitting ?
           <Button color="secondary" variant="contained" disabled={true}>
             Submitting...
           </Button> :
-          <Button color="secondary" variant="contained" disabled={isDisabled()}>
+          <Button color="secondary" variant="contained" disabled={isDisabled()} onClick={handleSubmit}>
             Submit
           </Button>}
       </DialogActions>
