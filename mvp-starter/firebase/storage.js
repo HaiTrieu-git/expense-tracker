@@ -22,9 +22,21 @@ import { storage } from './firebase';
 const BUCKET_URL = "gs://expense-tracker-c04b9.appspot.com";
 
 export async function uploadImage(image, uid) {
-    const formattedDate = format(new Date(), "yyyy-MM-dd'T'HH:mm:ss:'Z'");
+    const formattedDate = format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'Z'");
     const bucket = `${BUCKET_URL}/${uid}/${formattedDate}.jpg`;
     const storageRef = ref(storage, bucket);
     await uploadBytes(storageRef, image);
     return bucket;
+}
+
+export async function replaceImage(image, bucket) {
+    await uploadBytes(ref(storage, bucket), image);
+}
+
+export async function getDownloadURL(bucket) {
+    return await getStorageDownloadURL(ref(storage, bucket));
+}
+
+export function deleteImage(bucket) {
+    deleteObject(ref(storage, bucket));
 }
