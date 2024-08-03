@@ -33,15 +33,16 @@ export default function useFirebaseAuth() {
   const authStateChanged = async (user) => {
     setIsLoading(true);
     if (!user) {
-        clear();
-        return;
+      clear();
+      return;
     }
     setAuthUser({
-        uid: user.uid,
-        email: user.email
+      uid: user.uid,
+      email: user.email
     });
+    setUserProperties(await analytics(), { is_internal_user: user.email.endsWith("gmail.com") });
     setIsLoading(false);
-  }; 
+  };
 
   const signOut = () => authSignOut(auth).then(clear);
 
@@ -61,7 +62,7 @@ export default function useFirebaseAuth() {
 const AuthUserContext = createContext({
   authUser: null,
   isLoading: true,
-  signOut: async () => {}
+  signOut: async () => { }
 });
 
 export function AuthUserProvider({ children }) {

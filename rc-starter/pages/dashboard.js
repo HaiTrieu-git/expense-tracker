@@ -99,7 +99,7 @@ export default function Home() {
 
   useEffect(async () => {
     if (authUser) {
-      setIsLoadingReceipts(true);
+      //setIsLoadingReceipts(true);
       await getAndSetReceipts();
       setIsLoadingReceipts(false);
     }
@@ -149,7 +149,10 @@ export default function Home() {
     onResult(RECEIPTS_ENUM.delete, isSucceed);
   }
 
-  const getReceiptRows = (isConfirmedReceipts, receipts) => {
+  const getReceiptRows = (isConfirmedReceipts) => {
+    let receipts = ocrFeatureFlag ? 
+                    (isConfirmedReceipts ? toConfirmReceipts : pastReceipts) : 
+                    allReceipts;  
     const zeroStateText = isConfirmedReceipts ? 'No receipts to confirm' : 'No past receipts';
     const actionEnum = isConfirmedReceipts ? RECEIPTS_ENUM.confirm : RECEIPTS_ENUM.edit;
     return receipts.length > 0 ? 

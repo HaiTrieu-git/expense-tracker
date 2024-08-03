@@ -62,7 +62,7 @@ export default function expenseDialog(props) {
   const isAdd = props.action === RECEIPTS_ENUM.add;
   const isEdit = props.action === RECEIPTS_ENUM.edit;
   const isConfirm = props.action === RECEIPTS_ENUM.confirm;
-  
+
   const { authUser } = useAuth();
   const [formFields, setFormFields] = useState((isEdit || isConfirm) ? props.receipt : DEFAULT_FORM_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,17 +83,17 @@ export default function expenseDialog(props) {
   }, [props.edit, props.showDialog])
 
   // Check whether any of the form fields are unedited
-  const isDisabled = () => 
-    !isAdd ? 
-      formFields.fileName === DEFAULT_FILE_NAME || !formFields.date || formFields.locationName.length === 0 
-             || formFields.address.length === 0 || formFields.items.length === 0 || formFields.amount.length === 0 :
+  const isDisabled = () =>
+    !isAdd ?
+      formFields.fileName === DEFAULT_FILE_NAME || !formFields.date || formFields.locationName.length === 0
+      || formFields.address.length === 0 || formFields.items.length === 0 || formFields.amount.length === 0 :
       formFields.fileName === DEFAULT_FILE_NAME;
 
   // Set the relevant fields for receipt image
   const setFileData = (target) => {
     const file = target.files[0];
-    setFormFields(prevState => ({...prevState, fileName: file.name}));
-    setFormFields(prevState => ({...prevState, file}));
+    setFormFields(prevState => ({ ...prevState, fileName: file.name }));
+    setFormFields(prevState => ({ ...prevState, file }));
   }
 
   const closeDialog = () => {
@@ -112,6 +112,7 @@ export default function expenseDialog(props) {
 
         if (ocrFeatureFlag) {
           // Trigger Cloud Function
+          processImage({ bucket, uid: authUser.uid })
         } else {
           await addReceipt(authUser.uid, formFields.date, formFields.locationName, formFields.address, formFields.items, formFields.amount, bucket);
         }
@@ -135,58 +136,58 @@ export default function expenseDialog(props) {
 
   return (
     <div>
-    <Dialog classes={{paper: styles.dialog}}
-      onClose={closeDialog}
-      open={isEdit || isConfirm || isAdd}
-      component="form">
-      <Typography variant="h4" className={styles.title}>{dialogTitle}</Typography>
-      <DialogContent className={styles.pickImage}>
-        {<Stack direction="row" spacing={2} className={styles.receiptImage}>
-          {!formFields.fileName && 
-            <Link href={formFields.imageUrl} target="_blank">
-              <Avatar alt="receipt image" src={formFields.imageUrl} />
-            </Link>
+      <Dialog classes={{ paper: styles.dialog }}
+        onClose={closeDialog}
+        open={isEdit || isConfirm || isAdd}
+        component="form">
+        <Typography variant="h4" className={styles.title}>{dialogTitle}</Typography>
+        <DialogContent className={styles.pickImage}>
+          {<Stack direction="row" spacing={2} className={styles.receiptImage}>
+            {!formFields.fileName &&
+              <Link href={formFields.imageUrl} target="_blank">
+                <Avatar alt="receipt image" src={formFields.imageUrl} />
+              </Link>
+            }
+            {(isAdd || (isEdit && !ocrFeatureFlag)) &&
+              <Button variant="outlined" component="label" color="secondary">
+                Upload Receipt
+                <input type="file" hidden onInput={(event) => { setFileData(event.target) }} />
+              </Button>
+            }
+            <Typography>{formFields.fileName}</Typography>
+          </Stack>
           }
-          { (isAdd || (isEdit && !ocrFeatureFlag)) &&
-            <Button variant="outlined" component="label" color="secondary">
-              Upload Receipt
-              <input type="file" hidden onInput={(event) => {setFileData(event.target)}} />
+          {(isEdit || isConfirm || !ocrFeatureFlag) ?
+            <Stack className={styles.fields}>
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <DatePicker
+                  label="Date"
+                  value={formFields.date}
+                  onChange={(newDate) => {
+                    setFormFields(prevState => ({ ...prevState, date: newDate }));
+                  }}
+                  maxDate={new Date()}
+                  renderInput={(params) => <TextField {...params} />}
+                />
+              </LocalizationProvider>
+              <TextField color="tertiary" label="Location name" variant="standard" value={formFields.locationName} onChange={(event) => setFormFields(prevState => ({ ...prevState, locationName: event.target.value }))} />
+              <TextField color="tertiary" label="Location address" variant="standard" value={formFields.address} onChange={(event) => setFormFields(prevState => ({ ...prevState, address: event.target.value }))} />
+              <TextField color="tertiary" label="Items" variant="standard" value={formFields.items} onChange={(event) => setFormFields(prevState => ({ ...prevState, items: event.target.value }))} />
+              <TextField color="tertiary" label="Amount" variant="standard" value={formFields.amount} onChange={(event) => setFormFields(prevState => ({ ...prevState, amount: event.target.value }))} />
+            </Stack> : <div></div>
+          }
+        </DialogContent>
+        <DialogActions>
+          {isSubmitting ?
+            <Button color="secondary" variant="contained" disabled={true}>
+              {isConfirm ? 'Confirming...' : 'Submitting...'}
+            </Button> :
+            <Button color="secondary" variant="contained" onClick={handleSubmit} disabled={isDisabled()}>
+              {isConfirm ? 'Confirm' : 'Submit'}
             </Button>
           }
-          <Typography>{formFields.fileName}</Typography>
-        </Stack>
-        }
-        {(isEdit || isConfirm || !ocrFeatureFlag) ?
-          <Stack className={styles.fields}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                label="Date"
-                value={formFields.date}
-                onChange={(newDate) => {
-                  setFormFields(prevState => ({...prevState, date: newDate}));
-                }}
-                maxDate={new Date()}
-                renderInput={(params) => <TextField {...params} />}
-              />
-            </LocalizationProvider>
-            <TextField color="tertiary" label="Location name" variant="standard" value={formFields.locationName} onChange={(event) => setFormFields(prevState => ({...prevState, locationName: event.target.value}))} />
-            <TextField color="tertiary" label="Location address" variant="standard" value={formFields.address} onChange={(event) => setFormFields(prevState => ({...prevState, address: event.target.value}))} />
-            <TextField color="tertiary" label="Items" variant="standard" value={formFields.items} onChange={(event) => setFormFields(prevState => ({...prevState, items: event.target.value}))}/>
-            <TextField color="tertiary" label="Amount" variant="standard" value={formFields.amount} onChange={(event) => setFormFields(prevState => ({...prevState, amount: event.target.value}))} />
-          </Stack> : <div></div>
-        }
-      </DialogContent>
-      <DialogActions>
-        {isSubmitting ? 
-          <Button color="secondary" variant="contained" disabled={true}>
-            {isConfirm ? 'Confirming...' : 'Submitting...'}
-          </Button> :
-          <Button color="secondary" variant="contained" onClick={handleSubmit} disabled={isDisabled()}>
-            {isConfirm ? 'Confirm' : 'Submit'}
-          </Button>
-        }
-      </DialogActions>
-    </Dialog>
-</div>
+        </DialogActions>
+      </Dialog>
+    </div>
   )
 }

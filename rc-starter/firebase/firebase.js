@@ -25,9 +25,19 @@ import { getAnalytics, isSupported as isSupportedAnalytics } from "firebase/anal
 // Configure Firebase.
 export const firebaseConfig = {
   // Insert your Firebase project's configuration here
+  apiKey: "AIzaSyCvJO0clLyeApv2oLhWgUy8_yaJfVHS2Pg",
+  authDomain: "expense-tracker-c04b9.firebaseapp.com",
+  projectId: "expense-tracker-c04b9",
+  storageBucket: "expense-tracker-c04b9.appspot.com",
+  messagingSenderId: "1038704187533",
+  appId: "1:1038704187533:web:91fe82bfa39a43e7ddeac4",
+  measurementId: "G-WSR6SBF7BZ"
 };
 
 export const app = initializeApp(firebaseConfig);
+export const analytics = async () => await isSupportedAnalytics() && getAnalytics(app);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+// Call by await remoteConfig() every time a Remote Config instance is needed
+export const remoteConfig = async () => await isSupported() && getRemoteConfig(app);
