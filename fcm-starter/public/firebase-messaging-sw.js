@@ -15,9 +15,22 @@
  * limitations under the License.
  */
 
+import firebase from "firebase/compat/app";
+
 importScripts('https://www.gstatic.com/firebasejs/8.2.0/firebase-app.js');
 importScripts('https://www.gstatic.com/firebasejs/8.2.0/firebase-messaging.js');
 
 const firebaseConfig = {
     // Insert your Firebase project's configuration here
+    apiKey: "AIzaSyCvJO0clLyeApv2oLhWgUy8_yaJfVHS2Pg",
+    authDomain: "expense-tracker-c04b9.firebaseapp.com",
+    projectId: "expense-tracker-c04b9",
+    storageBucket: "expense-tracker-c04b9.appspot.com",
+    messagingSenderId: "1038704187533",
+    appId: "1:1038704187533:web:91fe82bfa39a43e7ddeac4",
+    measurementId: "G-WSR6SBF7BZ"
 };
+
+firebase.initializeApp(firebaseConfig);
+
+const messaging = firebase.messaging();

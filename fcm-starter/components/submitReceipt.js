@@ -21,9 +21,9 @@ import { updateReceipt } from '../firebase/firestore';
 import { replaceImage, uploadImage } from '../firebase/storage';
 import { RECEIPTS_ENUM } from '../pages/dashboard';
 import styles from '../styles/expenseDialog.module.scss';
-import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import DatePicker from '@mui/lab/DatePicker';
-import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { Avatar, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 
 const DEFAULT_FILE_NAME = "No file selected";

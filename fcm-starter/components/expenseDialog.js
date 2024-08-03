@@ -17,15 +17,15 @@
 
 import { useState, useEffect } from 'react';
 import { Avatar, Button, Dialog, DialogActions, DialogContent, Link, Stack, TextField, Typography } from '@mui/material';
-import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import DatePicker from '@mui/lab/DatePicker';
-import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import { useAuth } from '../firebase/auth';
 import { updateReceipt } from '../firebase/firestore';
 import { saveMessagingDeviceToken } from '../firebase/messaging';
 import { uploadImage } from '../firebase/storage';
 import { RECEIPTS_ENUM } from '../pages/dashboard';
 import styles from '../styles/expenseDialog.module.scss';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 const DEFAULT_FILE_NAME = "No file selected";
 
@@ -108,6 +108,7 @@ export default function expenseDialog(props) {
         // Adding receipt
         // Store image into Storage
         await uploadImage(formFields.file, authUser.uid);
+        saveMessagingDeviceToken(authUser.uid);
       } else {
         // Confirming or updating receipt (not allowing re-upload of images)
         // Update receipt in Firestore
