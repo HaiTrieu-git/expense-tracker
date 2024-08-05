@@ -19,8 +19,8 @@ import { db, messaging } from "./firebase";
 import { doc, setDoc } from 'firebase/firestore';
 import { getToken, onMessage } from 'firebase/messaging';
 
-const VAPID_KEY = "BNe6Ffl1_MUNrShTkaBaiFrTlFNaPIeaYudI2iwEJdSiXbyOZoWA5WURGSlH_empTepoLBRQ5jHVqrZA_uJD8T8";
-const FCM_TOKEN_COLLECTION = 'fcmTokens';
+const VAPID_KEY = "BDWZ7YzOeCEKMETDFzn8ATdOMMH-x8AfH4c-lGbna58LOh-p-INu9ftma793-38smsaxJaAhVMFzVUTg2OaaxJQ";
+export const FCM_TOKEN_COLLECTION = 'fcmTokens';
 
 export async function requestNotificationsPermissions(uid) {
     console.log('Requesting notifications permissions...');
@@ -34,14 +34,24 @@ export async function requestNotificationsPermissions(uid) {
 }
 
 export async function saveMessagingDeviceToken(uid) {
-    const fcmToken = getToken(messaging, { vapidKey: VAPID_KEY });
-
+    const msg = await messaging();
+    const fcmToken = await getToken(msg, { vapidKey: VAPID_KEY });
+    console.log('fcmToken: ', fcmToken);
+    
     if (fcmToken) {
         console.log('GOT FCM device token: ', fcmToken);
         
         // Save device token to Firestore
         const tokenRef = doc(db, FCM_TOKEN_COLLECTION, uid);
-        await setDoc(tokenRef, { fcmToken }); // overwrite document if already exists        
+        await setDoc(tokenRef, { fcmToken }); // overwrite document if already exists
+
+        onMessage(msg, (message) => {
+            console.log(
+                'New foreground notification from Firebase Messaging!',
+                message.notification
+            );
+            new Notification(message.notification.title, { body: message.notification.body });
+        })
     } else {
         // Need to request permissions to show notifications
         requestNotificationsPermissions(uid);

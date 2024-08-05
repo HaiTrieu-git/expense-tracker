@@ -36,5 +36,6 @@ export const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const messaging = getMessaging(app);
+// Call by await messaging() every time a Messaging instance is needed
+export const messaging = async () => await isSupported() && getMessaging(app);
 export const storage = getStorage(app); 

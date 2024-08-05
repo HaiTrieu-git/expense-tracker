@@ -58,6 +58,24 @@ export const readReceiptDetails = functions.storage.object().onFinalize(async (o
     await admin.firestore().collection(RECEIPT_COLLECTION).add(receipt);
   }
 
-  
+  const documentSnapshot = await admin.firestore().collection(FCM_TOKEN_COLLECTION).doc(uid).get();
+  const token = documentSnapshot.data()[FCM_TOKEN_KEY];
+
+  const message = 'Your receipt is ready for review and confirmation!';
+
+  const payload = {
+    token,
+    notification: {
+      title: 'Expense tracker: your expense has been processed',
+      body: message
+    }
+  }
+
+  admin.messaging().send(payload).then(response => {
+    // Response is a message ID string
+    functions.logger.log('Successfully sent massage: ', response);
+  }).catch(error => {
+    functions.logger.log('Error: ', error);
+  })
 
 });

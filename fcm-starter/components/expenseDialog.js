@@ -76,8 +76,14 @@ export default function expenseDialog(props) {
 
   // If the receipt to edit or whether to close or open the dialog ever changes, reset the form fields
   useEffect(() => {
+    let isMounted = true;
     if (props.showDialog) {
-      setFormFields(isEdit ? props.edit : DEFAULT_FORM_STATE);
+      if (isMounted) {
+        setFormFields(isEdit ? props.edit : DEFAULT_FORM_STATE);
+      }
+    }
+    return () => {
+      isMounted = false;
     }
   }, [props.edit, props.showDialog])
 
